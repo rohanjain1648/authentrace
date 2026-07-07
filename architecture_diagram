@@ -1,0 +1,35 @@
+// Veritas AI System Architecture
+digraph VeritasAI_Architecture {
+	rankdir=LR splines=ortho
+	node [fillcolor=lightblue fontname=Helvetica shape=box style=filled]
+	subgraph cluster_frontend {
+		bgcolor=whitesmoke label="Frontend (React/Vite)" style=rounded
+		SP [label="Student Portal
+(React Router)"]
+		PP [label="Professor Dashboard
+(React Router)"]
+		AP [label="Admin Portal
+(React Router)"]
+	}
+	subgraph cluster_backend {
+		bgcolor="#f9f9f9" label="Backend (Node.js/Express)" style=rounded
+		API [label="Express API
+(/api/submissions)"]
+		DB [label="In-Memory State
+(Submissions Array)"]
+	}
+	subgraph cluster_external {
+		bgcolor=white label="External Services" style="rounded,dashed"
+		GROQ [label="Groq API
+(llama3-8b-8192)" fillcolor="#ffcc99"]
+	}
+	SP -> API [label=" POST (Submit Essay)"]
+	PP -> API [label=" GET (Fetch Data)"]
+	PP -> API [label=" PUT (Intervene)"]
+	AP -> API [label=" GET (Analytics)"]
+	API -> DB [label=" Read/Write"]
+	API -> GROQ [label=" Analyze Text
+(Prompt + JSON schema)"]
+	GROQ -> API [label=" Return AI Score,
+Flags, Rationale"]
+}
