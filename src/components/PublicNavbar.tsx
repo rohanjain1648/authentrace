@@ -33,7 +33,7 @@ export function PublicNavbar() {
           <button className="btn-icon" onClick={toggleTheme} title="Toggle Theme">
             {theme === 'light' ? '🌙' : '☀️'}
           </button>
-          <Link to="/contact">
+          <Link to="/dashboard/professor">
             <button className="btn-signin">Sign in</button>
           </Link>
           <Link to="/dashboard/professor">

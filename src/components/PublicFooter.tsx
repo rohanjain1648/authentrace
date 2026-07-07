@@ -40,9 +40,7 @@ export function PublicFooter() {
           <div className="footer-column">
             <h4>Company</h4>
             <Link to="/about">About Us</Link>
-            <Link to="/careers">Careers</Link>
             <Link to="/security">Security</Link>
-            <Link to="/contact">Contact</Link>
             <Link to="/partners">Partners</Link>
           </div>
         </div>

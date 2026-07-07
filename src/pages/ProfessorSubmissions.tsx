@@ -2,15 +2,15 @@ import React from 'react';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { Search, Filter, MoreVertical, FileText } from 'lucide-react';
 
-const mockSubmissions = Array.from({ length: 25 }).map((_, i) => ({
-  id: `SUB-10${25 - i}`,
-  student: ['Alex Johnson', 'Sarah Smith', 'David Chen', 'Emily White', 'Michael T.', 'Jessica L.'][i % 6],
-  assignment: ['Final Thesis Draft', 'Midterm Essay', 'Lab Report 4', 'Literature Review', 'Chapter 2 Draft'][i % 5],
-  date: `${i % 5} days ago`,
-  risk: ['High', 'Low', 'Medium', 'Low', 'Low'][i % 5],
-  status: ['Flagged', 'Cleared', 'Review', 'Cleared', 'Cleared'][i % 5],
-  score: [94, 12, 65, 8, 4][i % 5],
-}));
+const mockSubmissions = Array.from({ length: 25 }).map((_, i) => {
+  const student = ['Alex Johnson', 'Sarah Smith', 'David Chen', 'Emily White', 'Michael T.', 'Jessica L.'][i % 6] ?? 'Unknown Student';
+  const assignment = ['Final Thesis Draft', 'Midterm Essay', 'Lab Report 4', 'Literature Review', 'Chapter 2 Draft'][i % 5] ?? 'Assignment';
+  const date = `${i % 5} days ago`;
+  const risk = ['High', 'Low', 'Medium', 'Low', 'Low'][i % 5] ?? 'Low';
+  const status = ['Flagged', 'Cleared', 'Review', 'Cleared', 'Cleared'][i % 5] ?? 'Cleared';
+  const score = [94, 12, 65, 8, 4][i % 5] ?? 0;
+  return { id: `SUB-10${25 - i}`, student, assignment, date, risk, status, score };
+});
 
 export function ProfessorSubmissions() {
   return (
