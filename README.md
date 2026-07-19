@@ -1,10 +1,10 @@
-# Veritas AI: Academic Trust Platform for Higher Education
+# Authentraceio AI: Academic Trust Platform for Higher Education
 
-![Veritas AI](https://github.com/user-attachments/assets/c93290b2-2e5f-4a0f-ba00-753bc61b2e65) <!-- Replace with an actual screenshot if desired -->
+![Authentraceio AI](https://github.com/user-attachments/assets/c93290b2-2e5f-4a0f-ba00-753bc61b2e65) <!-- Replace with an actual screenshot if desired -->
 
-**Veritas AI** is a comprehensive, enterprise-grade academic trust platform designed for Higher Education institutions (inspired by institutional responses in Alberta, Canada, and global AI-integration policies). 
+**Authentraceio AI** is a comprehensive, enterprise-grade academic trust platform designed for Higher Education institutions (inspired by institutional responses in Alberta, Canada, and global AI-integration policies). 
 
-Unlike traditional "AI Detectors" that often result in false positives and adversarial student-teacher relationships, Veritas AI is built on **pedagogical collaboration**. It combines state-of-the-art LLM analysis with transparent student disclosures and proactive professor interventions, ensuring academic integrity is maintained as a learning process rather than a purely punitive one.
+Unlike traditional "AI Detectors" that often result in false positives and adversarial student-teacher relationships, Authentraceio AI is built on **pedagogical collaboration**. It combines state-of-the-art LLM analysis with transparent student disclosures and proactive professor interventions, ensuring academic integrity is maintained as a learning process rather than a purely punitive one.
 
 ---
 
@@ -73,15 +73,15 @@ This architecture is designed to be easily deployed using **Vercel** (for the fr
 
 ### Step 1: Deploy Backend to Render
 1. Go to [Render.com](https://render.com/) and create a **New Web Service**.
-2. Connect your GitHub repository (`rohanjain1648/veritas`).
+2. Connect your GitHub repository (`rohanjain1648/authentraceio`).
 3. Set the **Root Directory** to `server`.
 4. Set the Build Command to `npm install` and Start Command to `node server.js`.
 5. Under Environment Variables, add `GROQ_API_KEY` with your actual key.
-6. Deploy and copy the live Render URL (e.g., `https://veritas-ai-backend.onrender.com`).
+6. Deploy and copy the live Render URL (e.g., `https://authentraceio-ai-backend.onrender.com`).
 
 ### Step 2: Deploy Frontend to Vercel
 1. Go to [Vercel.com](https://vercel.com/) and create a **New Project**.
-2. Import your GitHub repository (`rohanjain1648/veritas`).
+2. Import your GitHub repository (`rohanjain1648/authentraceio`).
 3. Vercel will automatically detect it as a Vite project.
 4. Under Environment Variables, add `VITE_API_URL` and paste your live Render URL.
 5. Click **Deploy**.
@@ -92,4 +92,4 @@ This architecture is designed to be easily deployed using **Vercel** (for the fr
 
 ## 📖 Pedagogical Philosophy
 
-Veritas AI was heavily influenced by emerging policies from institutions like Mount Royal University and the University of Calgary. The core philosophy is that AI detection alone is fundamentally flawed due to false positives and a lack of context. Veritas AI shifts the focus from "catching cheaters" to facilitating conversations about the ethical use of AI in academia.
+Authentraceio AI was heavily influenced by emerging policies from institutions like Mount Royal University and the University of Calgary. The core philosophy is that AI detection alone is fundamentally flawed due to false positives and a lack of context. Authentraceio AI shifts the focus from "catching cheaters" to facilitating conversations about the ethical use of AI in academia.

@@ -3,26 +3,36 @@
   display: flex;
   height: 100vh;
   width: 100vw;
-  background-color: var(--bg-primary);
+  background-color: transparent;
   color: var(--text-primary);
   overflow: hidden;
+  position: relative;
 }
 
 .dash-sidebar {
   width: 260px;
-  background: var(--bg-secondary);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   padding: var(--space-4) 0;
-  z-index: 10;
+  z-index: 50;
+  transition: transform 0.3s ease;
 }
 
 .dash-sidebar-header {
   padding: 0 var(--space-4);
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: var(--space-6);
+}
+
+.dash-mobile-close {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
 }
 
 .dash-nav {
@@ -68,21 +78,30 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
+  z-index: 10;
 }
 
 .dash-topbar {
   height: 70px;
-  background: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--space-6);
-  z-index: 5;
+  z-index: 15;
+}
+
+.dash-mobile-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
 }
 
 .dash-search input {
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   border: 1px solid var(--border-color);
   padding: 8px 16px;
   border-radius: var(--radius-full);
@@ -90,6 +109,7 @@
   font-size: 0.9rem;
   color: var(--text-primary);
   outline: none;
+  transition: all 0.2s ease;
 }
 
 .dash-search input:focus {
@@ -124,16 +144,30 @@
   flex: 1;
   overflow-y: auto;
   padding: var(--space-6);
-  background: var(--bg-primary);
+  /* Make transparent so wrapper aurora shows through */
+  background: transparent;
+}
+
+.dash-mobile-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 40;
 }
 
 /* Reusable Dashboard Components */
 .metric-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  /* Using glass-card styling directly here for metric cards */
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-glass-border);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
-  box-shadow: var(--glass-shadow);
+  box-shadow: var(--color-glass-shadow);
+  overflow-x: auto; /* Ensure tables don't overflow on mobile */
 }
 
 .metric-title {
@@ -163,3 +197,64 @@
   grid-template-columns: repeat(12, 1fr);
   gap: var(--space-4);
 }
+
+/* --- Responsive: Tablet --- */
+@media (max-width: 1200px) {
+  .dash-grid {
+    grid-template-columns: repeat(12, 1fr);
+  }
+  .dash-grid > * {
+    grid-column: span 12 !important;
+  }
+}
+
+/* --- Responsive: Mobile --- */
+@media (max-width: 768px) {
+  .dash-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+  }
+  
+  .dash-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  
+  .dash-mobile-toggle {
+    display: block;
+  }
+  
+  .dash-mobile-close {
+    display: block;
+  }
+
+  .dash-mobile-overlay {
+    display: block;
+  }
+  
+  .dash-search {
+    display: none;
+  }
+  
+  .dash-topbar {
+    padding: 0 var(--space-4);
+  }
+  
+  .dash-content-area {
+    padding: var(--space-4);
+  }
+
+  .dash-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  /* Make tables scroll horizontally */
+  table {
+    min-width: 600px;
+  }
+}
+

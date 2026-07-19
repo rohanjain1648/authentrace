@@ -144,5 +144,5 @@ app.put('/api/submissions/:id/intervene', (req, res) => {
 
 const PORT = 3001;
 app.listen(PORT, () => {
-  console.log(`Veritas AI Backend running on port ${PORT}`);
+  console.log(`Authentraceio AI Backend running on port ${PORT}`);
 });

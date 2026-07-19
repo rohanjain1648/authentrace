@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, FileText, Settings, ShieldAlert, LogOut } from 'lucide-react';
+import { Home, Users, FileText, Settings, ShieldAlert, LogOut, Menu, X } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 import './Dashboard.css';
 
@@ -12,6 +12,7 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children, role = 'professor' }: DashboardLayoutProps) {
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const getNavLinks = () => {
     switch(role) {
@@ -38,14 +39,25 @@ export function DashboardLayout({ children, role = 'professor' }: DashboardLayou
 
   return (
     <div className="dash-app-wrapper">
-      <div className="dash-sidebar">
+      <div className="aurora-bg" style={{ opacity: 0.6 }}></div>
+      <div className="grid-overlay"></div>
+      
+      {/* Mobile Overlay */}
+      {mobileMenuOpen && (
+        <div className="dash-mobile-overlay" onClick={() => setMobileMenuOpen(false)}></div>
+      )}
+
+      <div className={`dash-sidebar glass-panel ${mobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="dash-sidebar-header">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="var(--accent-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M2 17L12 22L22 17" stroke="var(--accent-orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M2 12L12 17L22 12" stroke="var(--accent-purple)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          <span className="logo-text" style={{fontSize: '1rem', marginLeft: '8px'}}>Veritas AI</span>
+          <span className="logo-text" style={{fontSize: '1rem', marginLeft: '8px'}}>Authentraceio AI</span>
+          <button className="dash-mobile-close" onClick={() => setMobileMenuOpen(false)}>
+            <X size={24} />
+          </button>
         </div>
         <nav className="dash-nav">
           {getNavLinks().map((link) => (
@@ -53,6 +65,7 @@ export function DashboardLayout({ children, role = 'professor' }: DashboardLayou
               key={link.path} 
               to={link.path} 
               className={`dash-nav-item ${location.pathname === link.path ? 'active' : ''}`}
+              onClick={() => setMobileMenuOpen(false)}
             >
               {link.icon}
               {link.name}
@@ -68,10 +81,16 @@ export function DashboardLayout({ children, role = 'professor' }: DashboardLayou
           </Link>
         </div>
       </div>
+      
       <div className="dash-main-area">
-        <header className="dash-topbar">
-          <div className="dash-search">
-            <input type="text" placeholder="Search students, submissions..." />
+        <header className="dash-topbar glass-panel">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button className="dash-mobile-toggle" onClick={() => setMobileMenuOpen(true)}>
+              <Menu size={24} />
+            </button>
+            <div className="dash-search">
+              <input type="text" placeholder="Search students, submissions..." />
+            </div>
           </div>
           <div className="dash-user">
             <span className="dash-role-badge">{role.toUpperCase()}</span>

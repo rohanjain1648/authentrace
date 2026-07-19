@@ -1,5 +1,5 @@
-// Veritas AI System Architecture
-digraph VeritasAI_Architecture {
+// Authentraceio AI System Architecture
+digraph AuthentraceioAI_Architecture {
 	rankdir=LR splines=ortho
 	node [fillcolor=lightblue fontname=Helvetica shape=box style=filled]
 	subgraph cluster_frontend {

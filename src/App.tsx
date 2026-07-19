@@ -19,8 +19,6 @@ import { DocumentationPage } from './pages/DocumentationPage';
 import { APIReferencePage } from './pages/APIReferencePage';
 import { CaseStudiesPage } from './pages/CaseStudiesPage';
 import { BlogPage } from './pages/BlogPage';
-import { AboutUsPage } from './pages/AboutUsPage';
-import { PartnersPage } from './pages/PartnersPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { TermsPage } from './pages/TermsPage';
 import { CookiesPage } from './pages/CookiesPage';
@@ -41,8 +39,6 @@ function App() {
           <Route path="/api" element={<APIReferencePage />} />
           <Route path="/case-studies" element={<CaseStudiesPage />} />
           <Route path="/blog" element={<BlogPage />} />
-          <Route path="/about" element={<AboutUsPage />} />
-          <Route path="/partners" element={<PartnersPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/cookies" element={<CookiesPage />} />

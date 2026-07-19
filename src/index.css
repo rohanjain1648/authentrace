@@ -1,42 +1,223 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
+/* ========== THEME CSS VARIABLES ========== */
+:root {
+  --color-bg: #f8f9fc;
+  --color-bg-secondary: #eef0f5;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f0f1f5;
+  --color-text: #111118;
+  --color-text-secondary: #555566;
+  --color-text-muted: #8888a0;
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-border-hover: rgba(0, 0, 0, 0.15);
+  --color-accent: #c8ff00;
+  --color-accent-hover: #a8d900;
+  --color-accent-text: #111118;
+  --color-purple: #7c5cfc;
+  --color-cyan: #00d4ff;
+  --color-rose: #ff3d7f;
+  --color-glass-bg: rgba(255, 255, 255, 0.6);
+  --color-glass-border: rgba(0, 0, 0, 0.06);
+  --color-glass-shadow: rgba(0, 0, 0, 0.04);
+  --color-glow-1: rgba(124, 92, 252, 0.12);
+  --color-glow-2: rgba(200, 255, 0, 0.1);
+  --color-glow-3: rgba(0, 212, 255, 0.08);
+  --color-card-gradient-from: rgba(255, 255, 255, 0.8);
+  --color-card-gradient-to: rgba(255, 255, 255, 0.4);
+  --color-navbar-bg: rgba(255, 255, 255, 0.7);
+  --color-footer-bg: #f0f1f5;
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 12px 40px rgba(0, 0, 0, 0.1);
+  --shadow-glow-accent: 0 0 40px rgba(200, 255, 0, 0.15);
+}
+
+.dark {
+  --color-bg: #06060a;
+  --color-bg-secondary: #0e0e14;
+  --color-surface: #111118;
+  --color-surface-hover: #1a1a24;
+  --color-text: #f0f0f5;
+  --color-text-secondary: #a0a0b8;
+  --color-text-muted: #5a5a70;
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-border-hover: rgba(255, 255, 255, 0.12);
+  --color-accent: #c8ff00;
+  --color-accent-hover: #a8d900;
+  --color-accent-text: #06060a;
+  --color-purple: #9b7dff;
+  --color-cyan: #00d4ff;
+  --color-rose: #ff5a94;
+  --color-glass-bg: rgba(255, 255, 255, 0.04);
+  --color-glass-border: rgba(255, 255, 255, 0.06);
+  --color-glass-shadow: rgba(0, 0, 0, 0.3);
+  --color-glow-1: rgba(124, 92, 252, 0.15);
+  --color-glow-2: rgba(200, 255, 0, 0.08);
+  --color-glow-3: rgba(0, 212, 255, 0.1);
+  --color-card-gradient-from: rgba(255, 255, 255, 0.05);
+  --color-card-gradient-to: rgba(255, 255, 255, 0.02);
+  --color-navbar-bg: rgba(6, 6, 10, 0.7);
+  --color-footer-bg: #0a0a0f;
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 12px 40px rgba(0, 0, 0, 0.5);
+  --shadow-glow-accent: 0 0 60px rgba(200, 255, 0, 0.12);
+}
+
+/* ========== BASE LAYER ========== */
 @layer base {
+  body,
+  nav,
+  footer,
+  .glass-panel,
+  .glass-card,
+  .glass-card-static,
+  .bento-card {
+    transition-property: background-color, border-color, color, box-shadow;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
   html, body {
-    @apply bg-brand-dark text-white font-sans antialiased overflow-x-hidden;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Sora', 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
 }
 
+/* ========== UTILITY CLASSES ========== */
 @layer utilities {
+  /* Glassmorphism Panels */
   .glass-panel {
-    @apply bg-brand-card backdrop-blur-xl border border-brand-border shadow-2xl rounded-2xl;
+    background: var(--color-glass-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--color-glass-border);
+    box-shadow: var(--shadow-glass);
+    border-radius: 1rem;
   }
+
+  .glass-card {
+    background: linear-gradient(135deg, var(--color-card-gradient-from), var(--color-card-gradient-to));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--color-glass-border);
+    box-shadow: var(--shadow-card);
+    border-radius: 1.25rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .glass-card:hover {
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--color-border-hover);
+    transform: translateY(-4px);
+  }
+
+  .glass-card-static {
+    background: linear-gradient(135deg, var(--color-card-gradient-from), var(--color-card-gradient-to));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--color-glass-border);
+    box-shadow: var(--shadow-card);
+    border-radius: 1.25rem;
+  }
+
+  /* Neon Glow Orbs */
   .neon-glow {
     position: absolute;
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, rgba(217, 241, 0, 0.15) 0%, rgba(217, 241, 0, 0) 70%);
     border-radius: 50%;
-    filter: blur(60px);
-    z-index: -1;
+    filter: blur(80px);
+    z-index: 0;
     pointer-events: none;
+    opacity: 0.6;
   }
+
+  /* Bento Grid */
   .bento-grid {
-    @apply grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3;
+    @apply grid gap-5 grid-cols-1 md:grid-cols-2 lg:grid-cols-3;
   }
+
   .bento-card {
-    @apply relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md transition-all duration-300 hover:bg-white/10 hover:border-brand-chartreuse/50;
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(135deg, var(--color-card-gradient-from), var(--color-card-gradient-to));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--color-glass-border);
+    box-shadow: var(--shadow-card);
+  }
+  .bento-card:hover {
+    border-color: var(--color-border-hover);
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+  }
+
+  /* Text Gradient */
+  .text-gradient-accent {
+    background: linear-gradient(135deg, #c8ff00, #00d4ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-purple {
+    background: linear-gradient(135deg, #7c5cfc, #00d4ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Shimmer Button */
+  .btn-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    animation: shimmer 3s linear infinite;
+  }
+
+  /* Section Divider */
+  .section-divider {
+    border-top: 1px solid var(--color-border);
   }
 }
 
-/* Custom Scrollbar for dark theme */
+/* ========== SCROLLBAR ========== */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  @apply bg-brand-dark;
+  background: var(--color-bg);
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-white/20 rounded-full hover:bg-white/30;
+  background: var(--color-text-muted);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+/* ========== SELECTION ========== */
+::selection {
+  background: #c8ff00;
+  color: #06060a;
 }

@@ -2,7 +2,7 @@ import graphviz
 import os
 
 def generate_architecture_diagram():
-    dot = graphviz.Digraph('VeritasAI_Architecture', comment='Veritas AI System Architecture', format='png')
+    dot = graphviz.Digraph('AuthentraceioAI_Architecture', comment='Authentraceio AI System Architecture', format='png')
     dot.attr(rankdir='LR', splines='ortho')
     dot.attr('node', shape='box', style='filled', fillcolor='lightblue', fontname='Helvetica')
 
@@ -38,7 +38,7 @@ def generate_architecture_diagram():
     print(f"Generated Architecture Diagram: {output_path}")
 
 def generate_workflow_diagram():
-    dot = graphviz.Digraph('VeritasAI_Workflow', comment='Pedagogical Intervention Workflow', format='png')
+    dot = graphviz.Digraph('AuthentraceioAI_Workflow', comment='Pedagogical Intervention Workflow', format='png')
     dot.attr(rankdir='TB')
     
     dot.node('Start', 'Student writes & submits essay\n(Discloses AI usage optionally)', shape='ellipse', fillcolor='lightgreen', style='filled')
@@ -73,7 +73,7 @@ def generate_workflow_diagram():
     print(f"Generated Workflow Diagram: {output_path}")
 
 def generate_mvp_workflow_diagram():
-    dot = graphviz.Digraph('VeritasAI_MVP_Workflow', comment='MVP Platform Features and Workflow', format='png')
+    dot = graphviz.Digraph('AuthentraceioAI_MVP_Workflow', comment='MVP Platform Features and Workflow', format='png')
     dot.attr(rankdir='TB', splines='polyline')
     dot.attr('node', fontname='Helvetica', shape='box', style='filled', borderRadius='8')
 
