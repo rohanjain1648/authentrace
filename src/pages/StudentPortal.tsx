@@ -20,22 +20,45 @@ export function StudentPortal() {
     visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 100 } }
   };
 
+  const [file, setFile] = useState<File | null>(null);
+
   const handleSubmit = async () => {
-    if (!text || !assignment) {
-      setMessage('Please enter a title and paste your text.');
+    if (!text && !file) {
+      setMessage('Please enter a title and either paste your text or upload a file.');
       return;
     }
     
     setSubmitting(true);
     setMessage('');
     
-    // Simulate submission
-    setTimeout(() => {
-      setMessage('Assignment submitted successfully! It is now pending analysis.');
-      setAssignment('');
-      setText('');
+    try {
+      const formData = new FormData();
+      formData.append('student', 'Demo Student'); // In real app, from auth
+      formData.append('assignment', assignment || 'Untitled');
+      formData.append('aiDisclosed', aiDisclosed.toString());
+      if (text) formData.append('text', text);
+      if (file) formData.append('file', file);
+
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${API_URL}/api/submissions`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        setMessage('Assignment submitted successfully! It is now pending analysis.');
+        setAssignment('');
+        setText('');
+        setFile(null);
+      } else {
+        const err = await res.json();
+        setMessage(`Error: ${err.detail || 'Submission failed'}`);
+      }
+    } catch (err) {
+      setMessage('Error: Failed to connect to server.');
+    } finally {
       setSubmitting(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -77,6 +100,22 @@ export function StudentPortal() {
                 style={{ width: '100%', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '1rem', resize: 'vertical', transition: 'border-color 0.2s', outline: 'none' }}
                 onFocus={e => e.target.style.borderColor = 'var(--accent-blue)'}
                 onBlur={e => e.target.style.borderColor = 'var(--border-color)'}
+              />
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }}></div>
+              <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>OR</span>
+              <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }}></div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: 500, marginBottom: '8px', color: 'var(--text-primary)' }}>Upload Document (.pdf, .docx, .txt)</label>
+              <input 
+                type="file" 
+                onChange={e => setFile(e.target.files ? e.target.files[0] : null)}
+                accept=".pdf,.docx,.txt"
+                style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px dashed var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)' }} 
               />
             </div>
 

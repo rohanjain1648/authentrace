@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+pydantic
+python-dotenv
+groq
+celery
+redis
+pdfplumber
+python-docx
+faiss-cpu
+sentence-transformers
+pytest
+httpx
+locust
