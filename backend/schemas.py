@@ -46,6 +46,8 @@ class SubmissionResponse(SubmissionBase):
     rationale: Optional[str] = None
     batch_id: Optional[str] = None
     language: Optional[str] = "en"
+    share_with_student: Optional[bool] = False
+    rubric_level: Optional[str] = None
     
     # We'll parse the JSON string back to dict/list in the router
     flagged_passages: Optional[List[FlaggedPassage]] = []
@@ -133,6 +135,28 @@ class BatchSummaryResponse(BaseModel):
     low_risk_count: int
     avg_overall_score: float
     submissions: List[SubmissionResponse]
+
+class AuditLogResponse(BaseModel):
+    id: int
+    actor_email: str
+    action: str
+    target_id: Optional[str] = None
+    timestamp: datetime
+    ip_address: Optional[str] = None
+    details: Optional[str] = None
+
+class OrderCreate(BaseModel):
+    tier: str
+
+class PaymentVerification(BaseModel):
+    razorpay_payment_id: str
+    razorpay_order_id: str
+    razorpay_signature: str
+    tier: str
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
 
 class AuditLogSchema(BaseModel):
     id: int

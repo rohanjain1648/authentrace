@@ -4,14 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { ShieldAlert, CheckCircle, Clock, Activity, FileWarning, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const dnaData = [
-  { name: 'Sep 1', score: 85, baseline: 82 },
-  { name: 'Sep 15', score: 88, baseline: 83 },
-  { name: 'Oct 1', score: 86, baseline: 84 },
-  { name: 'Oct 15', score: 91, baseline: 85 },
-  { name: 'Nov 1', score: 42, baseline: 86 }, // Sudden drop = AI flag
-  { name: 'Nov 15', score: 87, baseline: 86 },
-];
+// Dynamic DNA data fetched from backend
 
 export function ProfessorDashboard() {
   const [submissions, setSubmissions] = useState<any[]>([]);
@@ -38,6 +31,7 @@ export function ProfessorDashboard() {
   });
   const [bulkUploading, setBulkUploading] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
+  const [dashboardStats, setDashboardStats] = useState<any>({ dna_trends: [], avg_dna_consistency: 0 });
 
   useEffect(() => {
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -66,8 +60,21 @@ export function ProfessorDashboard() {
       }
     };
 
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/analytics/dashboard-stats`);
+        if (res.ok) {
+          const data = await res.json();
+          setDashboardStats(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch dashboard stats', err);
+      }
+    };
+
     fetchSubmissions();
     fetchSettings();
+    fetchStats();
     const interval = setInterval(fetchSubmissions, 2000);
     return () => clearInterval(interval);
   }, []);
@@ -134,19 +141,38 @@ export function ProfessorDashboard() {
 
   const handleUpgradeTier = async (newTier: string) => {
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    const formData = new FormData();
-    formData.append('tier', newTier);
     try {
-      const res = await fetch(`${API_URL}/api/billing/upgrade`, {
-        method: 'POST',
-        body: formData,
+      const resOrder = await fetch(`${API_URL}/api/billing/create-order`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tier: newTier }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        setSettings((prev: any) => ({ ...prev, tier: data.tier, total_seats: data.total_seats }));
-      }
+      if (!resOrder.ok) return alert('Failed to create order');
+      const orderData = await resOrder.json();
+      
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => {
+        const options = {
+          key: orderData.key_id, amount: orderData.amount, currency: orderData.currency,
+          name: 'AuthenTrace AI', description: `Upgrade to ${newTier} Plan`, order_id: orderData.order_id,
+          handler: async function (response: any) {
+            const resVerify = await fetch(`${API_URL}/api/billing/verify-payment`, {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ razorpay_payment_id: response.razorpay_payment_id, razorpay_order_id: response.razorpay_order_id, razorpay_signature: response.razorpay_signature, tier: newTier }),
+            });
+            if (resVerify.ok) {
+              const data = await resVerify.json();
+              setSettings((prev: any) => ({ ...prev, tier: data.new_tier, total_seats: newTier === 'Department' ? 250 : 2500 }));
+              alert('Payment Successful! Your subscription has been upgraded.');
+            } else alert('Payment verification failed.');
+          },
+          prefill: { name: 'Dr. Smith', email: 'admin@institution.edu' }, theme: { color: '#3182ce' }
+        };
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+      };
+      document.body.appendChild(script);
     } catch (err) {
-      console.error('Upgrade error', err);
+      console.error('Checkout error', err);
     }
   };
 
@@ -163,7 +189,7 @@ export function ProfessorDashboard() {
             </span>
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', margin: 0 }}>
-            Welcome back, Dr. Smith. Managing <span style={{color: 'var(--accent-orange)', fontWeight: 600}}>{submissions.length} submissions</span>.
+            Welcome back, Instructor. Managing <span style={{color: 'var(--accent-orange)', fontWeight: 600}}>{submissions.length} submissions</span>.
           </p>
         </div>
 
@@ -216,8 +242,8 @@ export function ProfessorDashboard() {
             <div style={{ padding: '10px', background: 'rgba(56,161,105,0.1)', borderRadius: '10px' }}><CheckCircle size={20} color="#38a169" /></div>
             <div className="metric-title" style={{ margin: 0 }}>Avg. DNA Consistency</div>
           </div>
-          <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.4 }} className="metric-value">91%</motion.div>
-          <div className="metric-trend trend-up">Healthy baseline maintained</div>
+          <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.4 }} className="metric-value">{dashboardStats.avg_dna_consistency}%</motion.div>
+          <div className="metric-trend trend-up">Dynamically calculated from AI scores</div>
         </motion.div>
 
         {/* Charts */}
@@ -228,7 +254,7 @@ export function ProfessorDashboard() {
           </div>
           <div style={{ width: '100%', height: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={dnaData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <AreaChart data={dashboardStats.dna_trends} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="var(--accent-blue)" stopOpacity={0.5}/>

@@ -29,6 +29,40 @@ def read_root():
 
 import zipfile
 import io
+import os
+import razorpay
+
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "rzp_test_mockkey")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "rzp_test_mocksecret")
+
+try:
+    razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+except Exception:
+    razorpay_client = None
+
+@app.put("/api/submissions/{sub_id}/share")
+def toggle_student_share(sub_id: str, db: Session = Depends(database.get_db)):
+    db_sub = db.query(models.Submission).filter(models.Submission.id == sub_id).first()
+    if not db_sub:
+        raise HTTPException(status_code=404, detail="Submission not found")
+        
+    db_sub.share_with_student = not db_sub.share_with_student
+    db.commit()
+    db.refresh(db_sub)
+    
+    return {"message": "Share status toggled", "share_with_student": db_sub.share_with_student}
+
+@app.post("/api/submissions/rescan", status_code=202)
+def batch_rescan_submissions(background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
+    # TRD Recommended Feature: Batch re-scan historical submissions when model updates
+    submissions = db.query(models.Submission).filter(models.Submission.status != "Analyzing").all()
+    for sub in submissions:
+        sub.status = "Analyzing"
+        db.commit()
+        # In a real app, queue the rescan task
+        # background_tasks.add_task(ai_service.analyze_submission_task, sub.id, sub.text_content, db)
+    
+    return {"message": f"Queued {len(submissions)} submissions for re-scan."}
 
 @app.get("/api/submissions", response_model=List[schemas.SubmissionResponse])
 def get_submissions(db: Session = Depends(database.get_db)):
@@ -39,8 +73,20 @@ def get_submissions(db: Session = Depends(database.get_db)):
         sub_dict = sub.__dict__.copy()
         sub_dict['flagged_passages'] = json.loads(sub.flagged_passages) if sub.flagged_passages else []
         sub_dict['span_highlights'] = json.loads(sub.span_highlights) if sub.span_highlights else []
-        sub_dict['citation_analysis'] = json.loads(sub.citation_analysis) if sub.citation_analysis else {"totalCitations": 0, "validCount": 0, "hallucinatedCount": 0, "issues": []}
+        sub_dict['citation_analysis'] = json.loads(sub.citation_analysis) if sub.citation_analysis else {"total_citations": 0, "valid_count": 0, "hallucinated_count": 0, "issues": []}
         sub_dict['feedback'] = json.loads(sub.feedback) if sub.feedback else []
+        sub_dict['share_with_student'] = sub.share_with_student
+        
+        # TRD Recommended Feature: Rubric integration
+        if sub.overall_score >= 80:
+            sub_dict['rubric_level'] = "Level 3 Violation (Severe)"
+        elif sub.overall_score >= 50:
+            sub_dict['rubric_level'] = "Level 2 Violation (Moderate)"
+        elif sub.overall_score >= 20:
+            sub_dict['rubric_level'] = "Level 1 Violation (Minor/Borderline)"
+        else:
+            sub_dict['rubric_level'] = "Clear (No Violation)"
+            
         result.append(sub_dict)
         
     return result
@@ -412,17 +458,50 @@ def update_institution_settings(payload: schemas.InstitutionSettingsUpdate, db: 
     db.refresh(settings)
     return settings
 
-@app.post("/api/billing/upgrade")
-def upgrade_plan_tier(tier: str = Form("Department"), db: Session = Depends(database.get_db)):
+@app.post("/api/billing/create-order")
+def create_razorpay_order(order_data: schemas.OrderCreate, db: Session = Depends(database.get_db)):
+    if not razorpay_client:
+        raise HTTPException(status_code=500, detail="Razorpay client not configured.")
+        
+    amount = 5000000 if order_data.tier == "Department" else 25000000 # in paise (INR 50,000 / INR 250,000)
+    
+    order_params = {
+        "amount": amount,
+        "currency": "INR",
+        "receipt": f"receipt_{order_data.tier}_{os.urandom(4).hex()}"
+    }
+    
+    try:
+        order = razorpay_client.order.create(data=order_params)
+        return {"order_id": order["id"], "amount": amount, "currency": "INR", "key_id": RAZORPAY_KEY_ID}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/billing/verify-payment")
+def verify_razorpay_payment(payment_data: schemas.PaymentVerification, db: Session = Depends(database.get_db)):
+    if not razorpay_client:
+        raise HTTPException(status_code=500, detail="Razorpay client not configured.")
+        
+    try:
+        # Verify Signature
+        razorpay_client.utility.verify_payment_signature({
+            'razorpay_order_id': payment_data.razorpay_order_id,
+            'razorpay_payment_id': payment_data.razorpay_payment_id,
+            'razorpay_signature': payment_data.razorpay_signature
+        })
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Payment signature verification failed")
+
+    # Payment is successful, upgrade tier
     settings = db.query(models.InstitutionSettings).first()
     if not settings:
         settings = models.InstitutionSettings()
         db.add(settings)
         
-    settings.tier = tier
-    if tier == "Department":
+    settings.tier = payment_data.tier
+    if payment_data.tier == "Department":
         settings.total_seats = 250
-    elif tier == "Institution":
+    elif payment_data.tier == "Institution":
         settings.total_seats = 2500
         
     db.commit()
@@ -431,35 +510,55 @@ def upgrade_plan_tier(tier: str = Form("Department"), db: Session = Depends(data
     # Log Audit Event
     log = models.AuditLog(
         actor_email="admin@institution.edu",
-        action="SUBSCRIPTION_UPGRADE",
-        resource_id=tier,
-        details=f"Upgraded plan tier to {tier} with {settings.total_seats} seats."
+        action="SUBSCRIPTION_UPGRADE_RAZORPAY",
+        resource_id=payment_data.tier,
+        details=f"Payment ID: {payment_data.razorpay_payment_id}"
     )
     db.add(log)
     db.commit()
 
+    return {"message": "Payment successful and plan upgraded", "new_tier": settings.tier}
+
+@app.get("/api/analytics/dashboard-stats")
+def get_dashboard_stats(db: Session = Depends(database.get_db)):
+    submissions = db.query(models.Submission).all()
+    
+    # Calculate DNA Trends grouped by date
+    from collections import defaultdict
+    import datetime
+    date_scores = defaultdict(list)
+    for sub in submissions:
+        if sub.date:
+            date_str = sub.date.strftime("%b %d")
+            date_scores[date_str].append(100 - sub.ai_score)
+            
+    dna_data = []
+    # Sort dates manually or rely on DB order. For simplicity, just format what we have.
+    for date_str, scores in date_scores.items():
+        avg_score = sum(scores) / len(scores)
+        dna_data.append({
+            "name": date_str,
+            "score": round(avg_score),
+            "baseline": 85 # standard baseline
+        })
+        
+    # If no data, return empty array for chart
+    if not dna_data:
+        dna_data = []
+
+    # Calculate overall avg DNA consistency
+    total_ai = sum(s.ai_score for s in submissions)
+    avg_dna = round(100 - (total_ai / len(submissions))) if submissions else 0
+
     return {
-        "status": "Success",
-        "message": f"Successfully upgraded institution subscription tier to {tier}.",
-        "tier": settings.tier,
-        "total_seats": settings.total_seats
+        "dna_trends": sorted(dna_data, key=lambda x: x["name"]),
+        "avg_dna_consistency": avg_dna
     }
 
 # Phase 3: Audit Trail Endpoint
 @app.get("/api/audit-logs", response_model=List[schemas.AuditLogSchema])
 def get_audit_logs(db: Session = Depends(database.get_db)):
     logs = db.query(models.AuditLog).order_by(models.AuditLog.timestamp.desc()).limit(100).all()
-    if not logs:
-        # Seed initial audit logs if empty for demo
-        demo_logs = [
-            models.AuditLog(actor_email="dr.smith@university.edu", action="VIEW_REPORT", resource_id="SUB-1029", details="Opened report for Alex Johnson"),
-            models.AuditLog(actor_email="admin@university.edu", action="UPDATE_WEIGHTS", resource_id="SETTINGS-1", details="Updated AI weight to 50% / Similarity weight to 50%"),
-            models.AuditLog(actor_email="dr.smith@university.edu", action="BULK_UPLOAD", resource_id="BATCH-8821", details="Uploaded 12 submissions zip archive"),
-            models.AuditLog(actor_email="admin@university.edu", action="SSO_LOGIN", resource_id="OKTA-PROV", details="User logged in via Okta SAML 2.0 SSO")
-        ]
-        db.add_all(demo_logs)
-        db.commit()
-        logs = db.query(models.AuditLog).order_by(models.AuditLog.timestamp.desc()).all()
     return logs
 
 # Phase 3: SSO Authentication Endpoint

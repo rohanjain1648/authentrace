@@ -11,6 +11,7 @@ class Submission(Base):
     date = Column(DateTime(timezone=True), server_default=func.now())
     text_content = Column(Text, nullable=True)
     ai_disclosed = Column(Boolean, default=False)
+    share_with_student = Column(Boolean, default=False)
     
     # Analysis results
     status = Column(String, default="Analyzing") # Analyzing, Flagged, Cleared, Review Error
